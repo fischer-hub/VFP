@@ -12,7 +12,6 @@ export default class StartMenu extends Phaser.Scene {
         this.load.spritesheet('newgame_btn', 'sprites/start_screen/new_game.png', {frameWidth: 320, frameHeight: 180});
         this.load.spritesheet('resume_btn', 'sprites/start_screen/start_button.png', {frameWidth: 320, frameHeight: 180});
         this.load.spritesheet('update_btn', 'sprites/start_screen/update_button.png', {frameWidth: 320, frameHeight: 180});
-        this.load.audio('btn_click_snd', 'sounds/button_click.ogg');
     }
 
     create() {
@@ -23,5 +22,8 @@ export default class StartMenu extends Phaser.Scene {
         new AnimatedButton(this, 'update_btn',  () => { console.log('update game') });
 
     }
+    
+    update(){
 
+    }
 }

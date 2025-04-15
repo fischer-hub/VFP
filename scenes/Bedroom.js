@@ -1,3 +1,5 @@
+import { Player } from '../src/Player.js';
+
 export default class Bedroom extends Phaser.Scene {
     constructor() {
         super('Bedroom'); // <-- scene key
@@ -11,6 +13,7 @@ export default class Bedroom extends Phaser.Scene {
     create() {
         // Add a background or some content
         this.add.image(0, 0, 'bgBedroom').setOrigin(0);
+        this.player = new Player(this, 100, 100)
 
     }
 

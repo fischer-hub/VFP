@@ -1,3 +1,5 @@
+import {Cursor} from './CursorManager.js';
+
 export default class AnimatedButton extends Phaser.GameObjects.Sprite {
     constructor(scene, spriteKey, callback) {
         super(scene, 0, 0, spriteKey);
@@ -22,12 +24,12 @@ export default class AnimatedButton extends Phaser.GameObjects.Sprite {
         this.play(`${spriteKey}_rest`);
 
         // Setup interactions
-        //this.on('pointerover', () => this.play(`${spriteKey}_hover`));
-        //this.on('pointerout', () => this.play(`${spriteKey}_rest`));
+        this.on('pointerover', () => Cursor.grab());
+        this.on('pointerout', () => Cursor.reset());
         this.on('pointerdown', () => {
             this.play(`${spriteKey}_click`);
             if (this.sound) this.sound.play();
-            if (this.callback) scene.time.delayedCall(800, () => { this.callback();} );
+            if (this.callback) scene.time.delayedCall(800, () => { this.callback(); });
         });
     }
 
