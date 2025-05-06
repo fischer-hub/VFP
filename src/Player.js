@@ -69,9 +69,17 @@ export class Player extends Phaser.GameObjects.Sprite {
     }
   
     moveTo(x, y, onArrival = () => {}) {
+      
+      
+      // Check if the target point is in the walk area
+      if (this.scene.walkArea && !Phaser.Geom.Polygon.Contains(this.scene.walkArea, x, y)) {
+        console.log("blocked from walking")
+        return; // blocked!
+      }
+
       if (this.isMoving) return;
       this.isMoving = true;
-  
+
       this.setFlipX(x < this.x);
       this.play('walk');
       this.walk_snd.play()
