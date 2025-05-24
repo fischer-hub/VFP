@@ -1,7 +1,7 @@
 // Player.js
 export class Player extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
-      super(scene, x, y, 'player_idle', 0);
+      super(scene, 160, 180, 'player_idle', 0);
       scene.add.existing(this);
   
       this.scene = scene;
@@ -68,35 +68,97 @@ export class Player extends Phaser.GameObjects.Sprite {
       }
     }
   
-    moveTo(x, y, onArrival = () => {}) {
-      
-      
-      // Check if the target point is in the walk area
-      if (this.scene.walkArea && !Phaser.Geom.Polygon.Contains(this.scene.walkArea, x, y)) {
-        console.log("blocked from walking")
-        return; // blocked!
+
+    getFirstIntersection(x, y) {
+      const initial_path = new Phaser.Geom.Line(this.x, this.y, x, y);
+      const points = this.scene.walkArea.points;
+    
+      let closestPoint = null;
+      let minDist = Infinity;
+    
+      for (let i = 0; i < points.length; i++) {
+        const p1 = points[i];
+        const p2 = points[(i + 1) % points.length];
+        const edge = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
+    
+        const intersection = Phaser.Geom.Intersects.GetLineToLine(initial_path, edge);
+        if (intersection) {
+          const dist = Phaser.Math.Distance.Between(this.x, this.y, intersection.x, intersection.y);
+    
+          if (dist < minDist) {
+            minDist = dist;
+            closestPoint = intersection;
+          }
+        }
+      }
+    
+      // Optionally, nudge the intersection point slightly inside walk area to avoid edge sticking
+      if (closestPoint) {
+        const angle = Phaser.Math.Angle.Between(this.x, this.y, closestPoint.x, closestPoint.y);
+        closestPoint.x -= Math.cos(angle) * 2;
+        closestPoint.y -= Math.sin(angle) * 2;
+
+        // shift point by half the dr sprite depending on the direction he walks
+        //if (this.x < x){
+        //  closestPoint.x = closestPoint.x - 16
+        //} else if (this.x > x) {
+        //  closestPoint.x = closestPoint.x + 10
+        //} else {
+        //  closestPoint.x = closestPoint.x
+        //}
       }
 
-      if (this.isMoving) return;
-      this.isMoving = true;
+    
+      return closestPoint;
+    }
 
-      this.setFlipX(x < this.x);
+
+    moveTo(x, y, onArrival = () => {}) {
+      if (!this.scene.walkArea) {
+        console.warn("No walk area defined");
+        return;
+      }
+    
+      if (this.isMoving) return;
+
+      let intersectionPoint = this.getFirstIntersection(x, y);
+
+
+      let targetX = x
+      let targetY = y
+
+
+      if (intersectionPoint != null){
+        targetX = intersectionPoint.x;
+        targetY = intersectionPoint.y;
+      }
+    
+      this.isMoving = true;
+    
+      if (targetX < this.x) {
+        this.setFlipX(true);  // Face left
+      } else {
+        this.setFlipX(false); // Face right
+      }
+    
+
       this.play('walk');
-      this.walk_snd.play()
-  
+      this.walk_snd.play();
+    
       this.scene.tweens.add({
         targets: this,
-        x,
-        y,
-        duration: Phaser.Math.Distance.Between(this.x, this.y, x, y) * 13,
+        x: targetX,
+        y: targetY,
+        duration: Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY) * 13,
         onComplete: () => {
           this.play('idle');
           this.isMoving = false;
-          this.walk_snd.stop()
+          this.walk_snd.stop();
           onArrival();
         }
       });
     }
+    
   
     crouch() {
       this.play('crouch');
