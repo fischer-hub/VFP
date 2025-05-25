@@ -1,13 +1,14 @@
 // Player.js
 export class Player extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
-      super(scene, 160, 180, 'player_idle', 0);
+      super(scene, x, y, 'player_idle', 0);
       scene.add.existing(this);
   
       this.scene = scene;
-      this.setOrigin(0.5, 1);
+      this.setOrigin(0.5, 0.9);
       this.setDepth(10);
       this.isMoving = false;
+      this.no_collision = true;
   
       this.createAnimations();
       this.play('idle');
@@ -15,6 +16,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
 
       scene.input.on('pointerdown', () => {
+        if(this.isMoving || this.isGrabbing){return;}
         const pointer = scene.input.activePointer;
         this.moveTo(pointer.worldX, pointer.worldY);
     });
@@ -45,7 +47,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         anims.create({
           key: 'crouch',
           frames: anims.generateFrameNumbers('player_crouch', { start: 0, end: 2 }),
-          frameRate: 8,
+          frameRate: 2,
           repeat: 0
         });
       }
@@ -82,7 +84,8 @@ export class Player extends Phaser.GameObjects.Sprite {
         const edge = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
     
         const intersection = Phaser.Geom.Intersects.GetLineToLine(initial_path, edge);
-        if (intersection) {
+        if (intersection != null) {
+          this.no_collision = false
           const dist = Phaser.Math.Distance.Between(this.x, this.y, intersection.x, intersection.y);
     
           if (dist < minDist) {
@@ -93,7 +96,7 @@ export class Player extends Phaser.GameObjects.Sprite {
       }
     
       // Optionally, nudge the intersection point slightly inside walk area to avoid edge sticking
-      if (closestPoint) {
+      if (closestPoint != null) {
         const angle = Phaser.Math.Angle.Between(this.x, this.y, closestPoint.x, closestPoint.y);
         closestPoint.x -= Math.cos(angle) * 2;
         closestPoint.y -= Math.sin(angle) * 2;
@@ -107,7 +110,6 @@ export class Player extends Phaser.GameObjects.Sprite {
         //  closestPoint.x = closestPoint.x
         //}
       }
-
     
       return closestPoint;
     }
@@ -155,13 +157,17 @@ export class Player extends Phaser.GameObjects.Sprite {
           this.isMoving = false;
           this.walk_snd.stop();
           onArrival();
+          this.no_collision = true
         }
       });
     }
     
   
     crouch() {
-      this.play('crouch');
+      if (this.no_collision){
+        console.log('crouch triggered')
+        this.play('crouch');
+      }
     }
   
     talk() {

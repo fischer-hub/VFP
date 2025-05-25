@@ -4,6 +4,7 @@ import Bedroom from './scenes/Bedroom.js';
 import StartMenu from './scenes/StartMenu.js';
 import LoadGame from './scenes/LoadGame.js';
 import Inventory from './scenes/InventoryOverlay.js';
+//import {NavMeshPlugin} from './lib/phaser-navmesh-plugin.js';
 
 class BootScene extends Phaser.Scene {
     constructor() {
@@ -21,8 +22,9 @@ class BootScene extends Phaser.Scene {
         this.load.spritesheet('player_talk', 'sprites/characters/dr_talk.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('player_stretch', 'sprites/characters/dr_stretch.png', { frameWidth: 64, frameHeight: 64 });
 
-        // load button sound
+        // load common sounds
         this.load.audio('btn_click_snd', 'sounds/button_click.ogg');
+        this.load.audio('collect_snd', 'sounds/characters/dr/grab.ogg');
         
         // load walk sound
         this.load.audio('walk_snd', 'sounds/characters/dr/steps.ogg');
@@ -36,7 +38,8 @@ class BootScene extends Phaser.Scene {
             console.log(`[Global] Click at x=${pointer.x}, y=${pointer.y}`);
         });
 
-
+        let debug_mode = false
+        let record_mode = false
         
         this.input.keyboard.on('keydown-E', () => {
             console.log('e pressed')
@@ -44,6 +47,20 @@ class BootScene extends Phaser.Scene {
                 this.scene.stop('Inventory');
             } else if (!this.scene.isActive('StartMenu')) {
                 this.scene.launch('Inventory');
+            }
+        });
+
+        this.input.keyboard.on('keydown-D', () => {
+            if (this.input.keyboard.checkDown(this.input.keyboard.addKey('SHIFT'))) {
+                debug_mode = !debug_mode
+                console.log(`debug mode toggled ${debug_mode}`)
+            }
+        });
+
+        this.input.keyboard.on('keydown-R', () => {
+            if (debug_mode) {
+                record_mode = !record_mode
+                console.log(`record mode toggled ${record_mode}`)
             }
         });
         
